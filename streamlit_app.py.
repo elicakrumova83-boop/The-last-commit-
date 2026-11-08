@@ -1,0 +1,195 @@
+
+import streamlit as st
+import unicodedata
+
+st.set_page_config(
+    page_title="THE LAST COMMIT - 12A",
+    page_icon="🔐",
+    layout="centered"
+)
+
+st.markdown("""
+<style>
+.stApp {
+    background-color: #10101d;
+    color: white;
+}
+h1, h2, h3, p, label {
+    color: white !important;
+}
+.stTextInput input {
+    background-color: white !important;
+    color: black !important;
+    font-size: 18px !important;
+    min-height: 45px;
+}
+.stButton button, .stFormSubmitButton button {
+    background-color: #8255d6;
+    color: white !important;
+    width: 100%;
+    min-height: 45px;
+    border-radius: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+def clean(text):
+    text = unicodedata.normalize("NFKC", text)
+    return " ".join(text.strip().lower().split())
+
+
+levels = [
+    {
+        "title": "LEVEL 01 - THE BEGINNING",
+        "place": "УЧИЛИЩЕТО",
+        "story": "Всяка история започва отнякъде. Намери мястото, което показва света чрез релеф, а не чрез обикновена снимка.",
+        "question": "Как се нарича това изображение?",
+        "answers": ["релефна карта", "карта", "картата"]
+    },
+    {
+        "title": "LEVEL 02 - TIME",
+        "place": "ЧАСОВНИКОВАТА КУЛА",
+        "story": "Времето никога не спира. То пази спомените на града. Намери годината, свързана с часовниковата кула.",
+        "question": "Коя е годината?",
+        "answers": ["1778"]
+    },
+    {
+        "title": "LEVEL 03 - HISTORY",
+        "place": "ИКОНОМОВАТА КЪЩА",
+        "story": "Някои сгради пазят повече истории, отколкото можем да си представим.",
+        "question": "Коя е търсената година?",
+        "answers": ["1859"]
+    },
+    {
+        "title": "LEVEL 04 - THE NAME",
+        "place": "ЦЪРКВАТА",
+        "story": "Следващата следа не е число. Тя е име, което трябва да откриеш.",
+        "question": "Кое е името?",
+        "answers": ["никола", "свети никола", "св никола"]
+    },
+    {
+        "title": "LEVEL 05 - THE BRIDGE",
+        "place": "МОСТЪТ НА КОЛЮ ФИЧЕТО",
+        "story": "Камък по камък е изграден мост, който свързва не само два бряга, но и поколения.",
+        "question": "През коя година е построен мостът?",
+        "answers": ["1861"]
+    },
+    {
+        "title": "LEVEL 06 - THE FINAL CLUE",
+        "place": "ПОСЛЕДНАТА ДЕСТИНАЦИЯ",
+        "story": "Това е последната следа. Не търси забележителност. Потърси мястото, където живее човекът, който е част от вашата история.",
+        "question": "Къде трябва да отидеш?",
+        "answers": ["домът на класната", "нейният дом", "дома на класната"]
+    }
+]
+
+
+if "started" not in st.session_state:
+    st.session_state.started = False
+
+if "level" not in st.session_state:
+    st.session_state.level = 0
+
+if "finished" not in st.session_state:
+    st.session_state.finished = False
+
+
+st.markdown("<h1 style='text-align:center;'>THE LAST COMMIT</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;'>ONE CLASS. ONE STORY. ONE FINAL MISSION.</p>", unsafe_allow_html=True)
+
+st.divider()
+
+
+if not st.session_state.started:
+
+    st.markdown("## ACCESS RESTRICTED")
+
+    st.write("""
+    Шест нива.
+    
+    Шест загадки.
+    
+    Една последна мисия.
+
+    Всяка следваща следа се отключва само след правилен отговор.
+    """)
+
+    if st.button("START MISSION"):
+        st.session_state.started = True
+        st.rerun()
+
+
+elif not st.session_state.finished:
+
+    current = levels[st.session_state.level]
+
+    st.progress((st.session_state.level + 1) / len(levels))
+
+    st.caption("LEVEL " + str(st.session_state.level + 1) + " / 6")
+
+    st.header(current["title"])
+
+    st.subheader(current["place"])
+
+    st.write(current["story"])
+
+    st.divider()
+
+    st.write("### YOUR NEXT CLUE")
+
+    st.write(current["question"])
+
+    with st.form(key="form_" + str(st.session_state.level)):
+
+        answer = st.text_input(
+            "ТВОЯТ ОТГОВОР",
+            placeholder="Напиши тук..."
+        )
+
+        submit = st.form_submit_button("UNLOCK NEXT LEVEL")
+
+    if submit:
+
+        possible_answers = [clean(x) for x in current["answers"]]
+
+        if clean(answer) in possible_answers:
+
+            if st.session_state.level == 5:
+                st.session_state.finished = True
+            else:
+                st.session_state.level += 1
+
+            st.rerun()
+
+        else:
+            st.error("ACCESS DENIED. Опитай отново!")
+
+
+else:
+
+    st.balloons()
+
+    st.markdown("# ACCESS GRANTED")
+
+    st.header("MISSION COMPLETED")
+
+    st.write("""
+    Всички загадки са решени.
+
+    Всички следи са открити.
+
+    Но остава още един въпрос...
+    """)
+
+    st.markdown("---")
+
+    st.markdown("## ЩЕ ДОЙДЕТЕ ЛИ НА НАШИЯ АБИТУРИЕНТСКИ БАЛ?")
+
+    st.markdown("### С обич от 12А ❤️")
+
+    if st.button("RESTART MISSION"):
+        st.session_state.started = False
+        st.session_state.level = 0
+        st.session_state.finished = False
+        st.rerun()
